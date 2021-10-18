@@ -1,0 +1,45 @@
+* yaml for config of flows
+* compress data before sending/and logging
+    * recompress logging data at later time for higher density
+* Virus scan files before compression
+* Log metadata, shasum, path (which gives who), date, pointer to transfer file in archive
+
+essentially i want to write a script like the following:
+
+use Saad::transfer;
+use GetOpt::Long;
+...
+read_config($configfile,\%settings);
+verify_necessary_settings(\%settings);
+
+for my $dir (${settings->{"Subdirs}){
+    # if there are files,
+    my $dircheck = check_for_new_files($dir);
+    #  move them to work dir
+    if( $dircheck ){
+        start_work_on($dir); # In new process
+        # Create lock_file in lock_file_dir
+        # check files (virusscan n so on).
+        run_transfer($dir, \%settings)
+            # which runs the following
+            if( virus scanning){
+                virus_scan_files($dir,$virus_scanner, \&found_action);
+            }
+            if( logging ){
+                if( archiveing ){
+                    archive( $dir, $archive_dir ){
+                        log_file_transfer($dir, $logfile);
+                    }
+                }
+            }
+        # all verification n stuff is done, let's do the actual transfer
+        send_to_diode( $dir );
+            # which tars up n compresses the files, then splits it into bite size pices
+            # it then moves the tar to a parrallel directory (i.e. on the same file system)
+            # and finally moves it all to a transfer dir for the diode to move them.
+    }
+}
+
+# Check for files should probably be run very often by a cron job, when new files are found it launches the for loop.
+# The check should verify
+# check_for_new_files should, if it finds a file, spawn new process and see if it is still growing before moving it.
